@@ -2,7 +2,7 @@
 using Inflow.Domain.DTOs.SaleItem;
 using Inflow.Domain.DTOs.SupplyItem;
 
-namespace DiyorMarket.Domain.DTOs.Product
+namespace Inflow.Domain.DTOs.Product
 {
     public record ProductDto
     {
