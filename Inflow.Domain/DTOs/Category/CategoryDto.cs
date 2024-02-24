@@ -1,4 +1,4 @@
-﻿using DiyorMarket.Domain.DTOs.Product;
+﻿using Inflow.Domain.DTOs.Product;
 
 namespace Inflow.Domain.DTOs.Category
 {
