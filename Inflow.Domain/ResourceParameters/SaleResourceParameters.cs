@@ -2,6 +2,6 @@
 {
     public class SaleResourceParameters : ResourceParametersBase
     {
-        public override string OrderBy { get; set; } = "int";
+        public override string OrderBy { get; set; } = "id";
     }
 }
