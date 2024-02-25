@@ -1,5 +1,4 @@
-﻿using Inflow.Domain.Common;
-using Inflow.Domain.Responses;
+﻿using Inflow.Domain.Responses;
 using static System.Net.WebRequestMethods;
 
 namespace Inflow.Domain.Pagniation;
