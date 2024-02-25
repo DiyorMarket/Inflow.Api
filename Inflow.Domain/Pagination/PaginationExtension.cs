@@ -1,4 +1,4 @@
-﻿using Inflow.Domain.Common;
+﻿using Inflow.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inflow.Domain.Pagniation

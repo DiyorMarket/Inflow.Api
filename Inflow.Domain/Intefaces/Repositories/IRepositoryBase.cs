@@ -1,4 +1,4 @@
-﻿using Inflow.Domain.Common;
+﻿using Inflow.Domain.Entities;
 
 namespace Inflow.Domain.Interfaces.Repositories
 {

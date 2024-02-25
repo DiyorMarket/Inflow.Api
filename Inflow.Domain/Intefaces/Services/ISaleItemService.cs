@@ -1,5 +1,6 @@
 ﻿using Inflow.Domain.DTOs.Category;
 using Inflow.Domain.DTOs.SaleItem;
+using Inflow.Domain.DTOsSaleItem;
 using Inflow.Domain.Pagniation;
 using Inflow.Domain.ResourceParameters;
 using Inflow.Domain.Responses;
