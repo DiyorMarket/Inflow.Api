@@ -1,9 +1,7 @@
-﻿using DiyorMarket.Domain.DTOs.Sale;
-using DiyorMarket.Domain.DTOs.SaleItem;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Domain.ResourceParameters;
-using DiyorMarket.Services;
-using Microsoft.AspNetCore.Authorization;
+﻿using Inflow.Domain.DTOs.SaleItem;
+using Inflow.Domain.DTOsSaleItem;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Domain.ResourceParameters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DiyorMarket.Controllers

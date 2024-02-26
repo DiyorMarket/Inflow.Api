@@ -1,13 +1,9 @@
-﻿using ClosedXML.Excel;
-using DiyorMarket.Domain.DTOs.Category;
-using DiyorMarket.Domain.DTOs.Customer;
-using DiyorMarket.Domain.DTOs.Product;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Domain.ResourceParameters;
-using DiyorMarket.ResourceParameters;
-using Microsoft.AspNetCore.Authorization;
+﻿using Inflow.Domain.DTOs.Category;
+using Inflow.Domain.DTOs.Product;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Domain.ResourceParameters;
+using Inflow.ResourceParameters;
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
 
 namespace DiyorMarketApi.Controllers
 {

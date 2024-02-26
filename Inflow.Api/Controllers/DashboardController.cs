@@ -1,6 +1,5 @@
-﻿using DiyorMarket.Domain.DTOs.Dashboard;
-using DiyorMarket.Domain.Interfaces.Services;
-using Microsoft.AspNetCore.Authorization;
+﻿using Inflow.Domain.DTOs.Dashboard;
+using Inflow.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DiyorMarket.Controllers;

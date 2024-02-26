@@ -1,12 +1,9 @@
 ﻿using ClosedXML.Excel;
-using DiyorMarket.Domain.DTOs.Customer;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Domain.ResourceParameters;
-using Microsoft.AspNetCore.Authorization;
+using Inflow.Domain.DTOs.Customer;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Domain.ResourceParameters;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using System.Data;
-using System.Drawing;
 
 namespace DiyorMarket.Controllers
 {
@@ -111,7 +108,7 @@ namespace DiyorMarket.Controllers
             table.Columns.Add("Name", typeof(string));
             table.Columns.Add("Phone", typeof(string));
 
-            foreach(var customer in customers)
+            foreach (var customer in customers)
             {
                 table.Rows.Add(customer.Id, customer.FullName, customer.PhoneNumber);
             }

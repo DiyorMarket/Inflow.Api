@@ -1,7 +1,6 @@
-﻿using DiyorMarket.Domain.DTOs.SupplyItem;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Domain.ResourceParameters;
-using Microsoft.AspNetCore.Authorization;
+﻿using Inflow.Domain.DTOs.SupplyItem;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Domain.ResourceParameters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DiyorMarket.Controllers

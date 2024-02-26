@@ -1,17 +1,14 @@
 ﻿using AutoMapper;
 using ClosedXML.Excel;
-using DiyorMarket.Domain.DTOs.Category;
-using DiyorMarket.Domain.DTOs.Product;
-using DiyorMarket.Domain.Entities;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.ResourceParameters;
-using Microsoft.AspNetCore.Authorization;
+using Inflow.Domain.DTOs.Product;
+using Inflow.Domain.Entities;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.ResourceParameters;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
 using System.Data;
-using System.IO.Compression;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -100,7 +97,7 @@ namespace DiyorMarketApi.Controllers
 
             // Возврат PDF-файла
             return File(pdfStream.ToArray(), "application/pdf", "Products.pdf");
-        }   
+        }
 
         // GET api/<ProductsController>/5
         [HttpGet("{id}", Name = "GetProductById")]
@@ -160,7 +157,7 @@ namespace DiyorMarketApi.Controllers
                 CategoryId = product.Category.Id,
             };
 
-            jsonPatch.ApplyTo(productToPatch, ModelState);
+            jsonPatch.ApplyTo(productToPatch, (Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter)ModelState);
 
             if (!ModelState.IsValid)
             {
@@ -204,9 +201,9 @@ namespace DiyorMarketApi.Controllers
             {
                 table.Rows.Add(product.Id,
                     product.Name,
-                    product.Description, 
-                    product.SalePrice, 
-                    product.SupplyPrice, 
+                    product.Description,
+                    product.SalePrice,
+                    product.SupplyPrice,
                     product.ExpireDate,
                     product.Category != null ? product.Category.Name : null);
             }
