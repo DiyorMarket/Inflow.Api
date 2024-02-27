@@ -12,7 +12,7 @@ using System.Data;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace DiyorMarketApi.Controllers
+namespace Inflow.Controllers
 {
     [Route("api/products")]
     [ApiController]

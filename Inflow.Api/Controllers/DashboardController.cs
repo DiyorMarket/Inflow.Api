@@ -2,7 +2,7 @@
 using Inflow.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DiyorMarket.Controllers;
+namespace Inflow.Controllers;
 
 [Route("api/dashboard")]
 [ApiController]

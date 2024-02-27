@@ -5,7 +5,7 @@ using Inflow.Domain.ResourceParameters;
 using Inflow.ResourceParameters;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DiyorMarketApi.Controllers
+namespace Inflow.Controllers
 {
     [Route("api/categories")]
     [ApiController]
