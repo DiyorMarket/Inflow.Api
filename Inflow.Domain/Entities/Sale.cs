@@ -3,7 +3,7 @@
     public class Sale : EntityBase
     {
         public DateTime SaleDate { get; set; }
-        public decimal TotalPrice { get; set; }
+        public decimal TotalDue { get; set; }
 
         public int CustomerId { get; set; }
         public Customer Customer { get; set; }

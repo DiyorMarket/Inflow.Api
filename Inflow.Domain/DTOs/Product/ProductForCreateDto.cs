@@ -1,10 +1,8 @@
-﻿namespace Inflow.Domain.DTOs.Product
-{
-    public record ProductForCreateDto(
-        string Name,
-        string Description,
-        decimal SalePrice,
-        decimal SupplyPrice,
-        DateTime ExpireDate,
-        int CategoryId);
-}
+﻿namespace Inflow.Domain.DTOs.Product;
+
+public record ProductForCreateDto(
+    string Name,
+    string Description,
+    decimal Price,
+    DateTime ExpireDate,
+    int CategoryId);
