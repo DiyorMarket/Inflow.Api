@@ -1,17 +1,14 @@
 ﻿using Inflow.Domain.DTOs.Product;
 using Inflow.Domain.Pagniation;
-using Inflow.Domain.Responses;
 using Inflow.ResourceParameters;
 
-namespace Inflow.Domain.Interfaces.Services
+namespace Inflow.Domain.Interfaces.Services;
+
+public interface IProductService
 {
-    public interface IProductService
-    {
-        IEnumerable<ProductDto> GetAllProducts();
-        GetBaseResponse<ProductDto> GetProducts(ProductResourceParameters productResourceParameters);
-        ProductDto? GetProductById(int id);
-        ProductDto CreateProduct(ProductForCreateDto productToCreate);
-        void UpdateProduct(ProductForUpdateDto productToUpdate);
-        void DeleteProduct(int id);
-    }
+    Task<PaginatedList<ProductDto>> GetProductsAsync(ProductResourceParameters productResourceParameters);
+    Task<ProductDto?> GetProductByIdAsync(int id);
+    Task<ProductDto> CreateProductAsync(ProductForCreateDto productToCreate);
+    Task<ProductDto> UpdateProductAsync(ProductForUpdateDto productToUpdate);
+    Task DeleteProduct(int id);
 }

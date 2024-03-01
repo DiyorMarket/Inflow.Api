@@ -1,17 +1,14 @@
 ﻿using Inflow.Domain.DTOs.Customer;
 using Inflow.Domain.Pagniation;
 using Inflow.Domain.ResourceParameters;
-using Inflow.Domain.Responses;
 
-namespace Inflow.Domain.Interfaces.Services
+namespace Inflow.Domain.Interfaces.Services;
+
+public interface ICustomerService
 {
-    public interface ICustomerService
-    {
-        IEnumerable<CustomerDto> GetCustomers();
-        GetBaseResponse<CustomerDto> GetCustomers(CustomerResourceParameters customerResourceParameters);
-        CustomerDto? GetCustomerById(int id);
-        CustomerDto CreateCustomer(CustomerForCreateDto customerToCreate);
-        CustomerDto UpdateCustomer(CustomerForUpdateDto customerToUpdate);
-        void DeleteCustomer(int id);
-    }
+    Task<PaginatedList<CustomerDto>> GetCustomersAsync(CustomerResourceParameters customerResourceParameters);
+    Task<CustomerDto?> GetCustomerByIdAsync(int id);
+    Task<CustomerDto> CreateCustomerAsync(CustomerForCreateDto customerToCreate);
+    Task<CustomerDto> UpdateCustomerAsync(CustomerForUpdateDto customerToUpdate);
+    Task DeleteCustomerAsync(int id);
 }
