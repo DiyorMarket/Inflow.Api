@@ -21,16 +21,4 @@ public class PaginatedList<T> : List<T> where T : class
             
         AddRange(items);
     }
-
-    public GetBaseResponse<T> ToResponse()
-        => new()
-        {
-            Data = this.ToList(),
-            HasNextPage = HasNext,
-            HasPreviousPage = HasPrevious,
-            PageNumber = CurrentPage,
-            PageSize = PageSize,
-            TotalPages = TotalPages,
-            TotalCount = TotalCount
-        };
 }
