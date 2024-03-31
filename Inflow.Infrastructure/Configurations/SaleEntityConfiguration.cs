@@ -19,7 +19,6 @@ namespace Inflow.Infrastructure.Configurations
             builder.HasOne(s => s.Customer)
                 .WithMany(c => c.Sales)
                 .HasForeignKey(s => s.CustomerId);
-
         }
     }
 }
