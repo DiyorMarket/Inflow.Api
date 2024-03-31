@@ -9,6 +9,7 @@
 
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
+        public int LowQuantityAmount { get; set; }
 
         public virtual ICollection<SaleItem>? SaleItems { get; set; }
         public virtual ICollection<SupplyItem>? SupplyItems { get; set; }
