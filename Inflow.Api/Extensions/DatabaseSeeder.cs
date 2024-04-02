@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Inflow.Api.Extensions
 {
-    public class DatabaseSeeder
+    public static class DatabaseSeeder
     {
         private static Faker _faker = new Faker();
 
