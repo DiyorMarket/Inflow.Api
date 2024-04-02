@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Inflow.Domain.DTOs.Sale;
 using Inflow.Domain.DTOs.Supply;
 using Inflow.Domain.Entities;
 
@@ -7,7 +6,7 @@ namespace Inflow.Domain.Mappings
 {
     public class SupplyMappings : Profile
     {
-        public SupplyMappings() 
+        public SupplyMappings()
         {
             CreateMap<SupplyDto, Supply>()
                 .PreserveReferences();
