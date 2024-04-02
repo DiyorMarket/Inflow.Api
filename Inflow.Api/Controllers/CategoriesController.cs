@@ -148,7 +148,7 @@ namespace Inflow.Controllers
 
             foreach (var category in categories)
             {
-                data.Add(new { ID = category.Id, category.Name, category.NumberOfProduct });
+                data.Add(new { ID = category.Id, category.Name, category.NumberOfProducts });
             }
 
             return data;
@@ -163,7 +163,7 @@ namespace Inflow.Controllers
 
             foreach (var category in categories)
             {
-                table.Rows.Add(category.Id, category.Name, category.NumberOfProduct);
+                table.Rows.Add(category.Id, category.Name, category.NumberOfProducts);
             }
 
             return table;
