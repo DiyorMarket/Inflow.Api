@@ -6,11 +6,10 @@ using Inflow.Domain.Interfaces.Services;
 using Inflow.ResourceParameters;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using PdfSharpCore.Drawing;
-using PdfSharpCore.Pdf;
+using Syncfusion.Drawing;
+using Syncfusion.Pdf;
+using Syncfusion.Pdf.Grid;
 using System.Data;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Inflow.Controllers
 {
@@ -28,7 +27,6 @@ namespace Inflow.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/<ProductsController>
         [HttpGet]
         public ActionResult<IEnumerable<ProductDto>> GetProductsAsync(
             [FromQuery] ProductResourceParameters productResourceParameters)
@@ -38,68 +36,42 @@ namespace Inflow.Controllers
             return Ok(products);
         }
 
-        [HttpGet("export")]
+        [HttpGet("export/xls")]
         public ActionResult ExportProducts()
         {
-            var category = _productService.GetAllProducts();
-
-            using XLWorkbook wb = new XLWorkbook();
-            var sheet1 = wb.AddWorksheet(GetProductsDataTable(category), "Products");
-
-            sheet1.Column(1).Style.Font.FontColor = XLColor.Red;
-
-            sheet1.Columns(2, 4).Style.Font.FontColor = XLColor.Blue;
-
-            sheet1.Row(1).CellsUsed().Style.Fill.BackgroundColor = XLColor.Black;
-            //sheet1.Row(1).Cells(1,3).Style.Fill.BackgroundColor = XLColor.Yellow;
-            sheet1.Row(1).Style.Font.FontColor = XLColor.White;
-
-            sheet1.Row(1).Style.Font.Bold = true;
-            sheet1.Row(1).Style.Font.Shadow = true;
-            sheet1.Row(1).Style.Font.Underline = XLFontUnderlineValues.Single;
-            sheet1.Row(1).Style.Font.VerticalAlignment = XLFontVerticalTextAlignmentValues.Superscript;
-            sheet1.Row(1).Style.Font.Italic = true;
-
-            //sheet1.Rows(2, 3).Style.Font.FontColor = XLColor.AshGrey;
-
-            using MemoryStream ms = new MemoryStream();
-            wb.SaveAs(ms);
-            return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Products.xlsx");
-        }
-
-        [HttpGet("exportPDF")]
-        public ActionResult ExportProductsPDF()
-        {
             var products = _productService.GetAllProducts();
-            var dataTable = GetProductsDataTable(products);
+            byte[] data = GenerateExcle(products);
 
-            // Создание PDF-документа
-            using PdfDocument pdf = new PdfDocument();
-            PdfPage page = pdf.AddPage();
-            XGraphics gfx = XGraphics.FromPdfPage(page);
-            XFont font = new XFont("Arial", 12, XFontStyle.Regular);
-
-            // Начало новой страницы PDF
-            gfx.DrawString("Продукты PDF", font, XBrushes.Black, new XRect(0, 0, page.Width.Point, page.Height.Point), XStringFormats.TopCenter);
-
-            // Добавление данных о продуктах в PDF
-            int yPosition = 40;
-            foreach (DataRow row in dataTable.Rows)
-            {
-                string productInfo = $"Id: {row["Id"]}, Name: {row["Name"]}, Description: {row["Description"]}, SalePrice: {row["SalePrice"]}, SupplyPrice: {row["SupplyPrice"]}, ExpireDate: {row["ExpireDate"]}, CategoryName: {(row["CategoryName"] != DBNull.Value ? row["CategoryName"] : "")}";
-                gfx.DrawString(productInfo, font, XBrushes.Black, new XRect(0, yPosition, page.Width.Point, page.Height.Point), XStringFormats.TopLeft);
-                yPosition += 20;
-            }
-
-            // Сохранение PDF в MemoryStream и отправка его как файл ответа
-            using MemoryStream pdfStream = new MemoryStream();
-            pdf.Save(pdfStream, false);
-
-            // Возврат PDF-файла
-            return File(pdfStream.ToArray(), "application/pdf", "Products.pdf");
+            return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Products.xls");
         }
 
-        // GET api/<ProductsController>/5
+        [HttpGet("export/pdf")]
+        public IActionResult CreatePDFDocument()
+        {
+            PdfDocument document = new PdfDocument();
+            PdfPage page = document.Pages.Add();
+
+            PdfGrid pdfGrid = new PdfGrid();
+            var products = _productService.GetAllProducts();
+
+            List<object> data = ConvertCategoriesToData(products);
+
+            pdfGrid.DataSource = data;
+
+            pdfGrid.ApplyBuiltinStyle(PdfGridBuiltinStyle.GridTable4Accent1);
+
+            pdfGrid.Draw(page, new PointF(15, 15));
+
+            MemoryStream stream = new MemoryStream();
+            document.Save(stream);
+            stream.Position = 0;
+
+            string contentType = "application/pdf";
+            string fileName = "products.pdf";
+
+            return File(stream, contentType, fileName);
+        }
+
         [HttpGet("{id}", Name = "GetProductById")]
         public ActionResult<ProductDto> Get(int id)
         {
@@ -113,7 +85,6 @@ namespace Inflow.Controllers
             return Ok(product);
         }
 
-        // POST api/<ProductsController>
         [HttpPost]
         public ActionResult Post([FromBody] ProductForCreateDto product)
         {
@@ -122,7 +93,6 @@ namespace Inflow.Controllers
             return CreatedAtAction(nameof(Get), new { id = createdProduct.Id }, createdProduct);
         }
 
-        // PUT api/<ProductsController>/5
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] ProductForUpdateDto product)
         {
@@ -157,7 +127,7 @@ namespace Inflow.Controllers
                 CategoryId = product.Category.Id,
             };
 
-            jsonPatch.ApplyTo(productToPatch, (Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter)ModelState);
+            jsonPatch.ApplyTo(productToPatch, ModelState);
 
             if (!ModelState.IsValid)
             {
@@ -178,24 +148,25 @@ namespace Inflow.Controllers
             return Ok(productToPatch);
         }
 
-        // DELETE api/<ProductsController>/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
             _productService.DeleteProduct(id);
         }
 
-        private DataTable GetProductsDataTable(IEnumerable<ProductDto> productDtos)
+        private static DataTable GetProductsDataTable(IEnumerable<ProductDto> productDtos)
         {
-            DataTable table = new DataTable();
-            table.TableName = "Products Data";
+            DataTable table = new()
+            {
+                TableName = "Products"
+            };
             table.Columns.Add("Id", typeof(int));
             table.Columns.Add("Name", typeof(string));
             table.Columns.Add("Description", typeof(string));
-            table.Columns.Add("SalePrice", typeof(decimal));
-            table.Columns.Add("SupplyPrice", typeof(decimal));
-            table.Columns.Add("ExpireDate", typeof(DateTime));
-            table.Columns.Add("CategoryName", typeof(string));
+            table.Columns.Add("Sale Price", typeof(decimal));
+            table.Columns.Add("Supply Price", typeof(decimal));
+            table.Columns.Add("Expire Date", typeof(DateTime));
+            table.Columns.Add("Category", typeof(string));
 
             foreach (var product in productDtos)
             {
@@ -205,10 +176,48 @@ namespace Inflow.Controllers
                     product.SalePrice,
                     product.SupplyPrice,
                     product.ExpireDate,
-                    product.Category != null ? product.Category.Name : null);
+                    product.Category?.Name);
             }
 
             return table;
+        }
+        private static byte[] GenerateExcle(IEnumerable<ProductDto> productDto)
+        {
+            using XLWorkbook wb = new();
+            var sheet1 = wb.AddWorksheet(GetProductsDataTable(productDto), "Products");
+
+            sheet1.Columns(1, 3).Style.Font.FontColor = XLColor.Black;
+            sheet1.Columns(4, 5).Style.Font.FontColor = XLColor.Blue;
+            sheet1.Columns(6, 7).Style.Font.FontColor = XLColor.Black;
+            sheet1.Row(1).CellsUsed().Style.Fill.BackgroundColor = XLColor.Black;
+            sheet1.Row(1).Style.Font.FontColor = XLColor.White;
+
+            sheet1.Column(1).Width = 10;
+            sheet1.Columns(2, 3).Width = 25;
+            sheet1.Columns(4, 5).Width = 15;
+            sheet1.Columns(6, 7).Width = 20;
+            sheet1.Row(1).Style.Font.FontSize = 16;
+
+            sheet1.Row(1).Style.Font.Bold = true;
+            sheet1.Row(1).Style.Font.Shadow = true;
+            sheet1.Row(1).Style.Font.VerticalAlignment = XLFontVerticalTextAlignmentValues.Superscript;
+            sheet1.Row(1).Style.Font.Italic = false;
+
+            using MemoryStream ms = new();
+            wb.SaveAs(ms);
+
+            return ms.ToArray();
+        }
+        private List<object> ConvertCategoriesToData(IEnumerable<ProductDto> products)
+        {
+            List<object> data = new List<object>();
+
+            foreach (var product in products)
+            {
+                data.Add(new { ID = product.Id, product.Name, product.Description, product.ExpireDate, product.SalePrice, product.SupplyPrice, product.QuantityInStock });
+            }
+
+            return data;
         }
     }
 }
