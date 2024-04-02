@@ -1,20 +1,20 @@
 ﻿using AutoMapper;
-using DiyorMarket.Domain.DTOs.Customer;
-using DiyorMarket.Domain.Entities;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Domain.Pagniation;
-using DiyorMarket.Domain.ResourceParameters;
-using DiyorMarket.Domain.Responses;
-using DiyorMarket.Infrastructure.Persistence;
+using Inflow.Domain.DTOs.Customer;
+using Inflow.Domain.Entities;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Domain.Pagniation;
+using Inflow.Domain.ResourceParameters;
+using Inflow.Domain.Responses;
+using Inflow.Infrastructure;
 
 namespace DiyorMarket.Services
 {
     public class CustomerService : ICustomerService
     {
         private readonly IMapper _mapper;
-        private readonly DiyorMarketDbContext _context;
+        private readonly InflowDbContext _context;
 
-        public CustomerService(IMapper mapper, DiyorMarketDbContext context)
+        public CustomerService(IMapper mapper, InflowDbContext context)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _context = context ?? throw new ArgumentNullException(nameof(context));
