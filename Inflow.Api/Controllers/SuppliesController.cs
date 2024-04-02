@@ -113,7 +113,7 @@ namespace Inflow.Controllers
                 table.Rows.Add(supply.Id,
                     supply.TotalDue,
                     supply.SupplyDate,
-                    supply.Supplier);
+                    supply.SupplierId);
             }
 
             return table;
