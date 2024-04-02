@@ -1,4 +1,4 @@
-﻿using DiyorMarket.Domain.Interfaces.Services;
+﻿using Inflow.Domain.Intefaces.Services;
 using System.Net;
 using System.Net.Mail;
 
@@ -22,16 +22,13 @@ namespace DiyorMarket.Services
             try
             {
                 await smtpClient.SendMailAsync(mailMessage);
-                // Письмо успешно отправлено
             }
             catch (Exception ex)
             {
-                // Обработать исключение
                 throw new Exception($"Error: {ex}");
             }
             finally
             {
-                // Освободить ресурсы SmtpClient
                 smtpClient.Dispose();
             }
         }
