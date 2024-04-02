@@ -6,7 +6,7 @@ namespace Inflow.Domain.Mappings
 {
     public class ProductMappings : Profile
     {
-        public ProductMappings() 
+        public ProductMappings()
         {
             CreateMap<Product, ProductDto>()
                 .ForMember(x => x.SupplyPrice, r => r.MapFrom(x => x.Price))
@@ -15,7 +15,8 @@ namespace Inflow.Domain.Mappings
             CreateMap<ProductDto, Product>();
             CreateMap<ProductForCreateDto, Product>()
                 .ForMember(x => x.Price, r => r.MapFrom(x => x.SupplyPrice));
-            CreateMap<ProductForUpdateDto, Product>();
+            CreateMap<ProductForUpdateDto, Product>()
+                .ForMember(x => x.Price, r => r.MapFrom(x => x.SupplyPrice));
             CreateMap<Product, ProductForCreateDto>();
             CreateMap<Product, ProductForUpdateDto>();
         }

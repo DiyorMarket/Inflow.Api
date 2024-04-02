@@ -1,9 +1,13 @@
-﻿namespace Inflow.Domain.DTOs.SaleItem
+﻿using Inflow.Domain.DTOs.Product;
+
+namespace Inflow.Domain.DTOs.SaleItem
 {
     public record SaleItemDto(
-        int Id,
-        int Quantity,
-        decimal UnitPrice,
-        int ProductId,
-        int SaleId);
+         int Id,
+         string ProductName,
+         int Quantity,
+         decimal UnitPrice,
+         ProductDto Product,
+         int SaleId,
+         decimal TotalDue);
 }
