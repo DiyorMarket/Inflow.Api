@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
-using DiyorMarket.Domain.DTOs.Sale;
-using DiyorMarket.Domain.Entities;
-using DiyorMarket.Domain.Exceptions;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Domain.Pagniation;
-using DiyorMarket.Domain.ResourceParameters;
-using DiyorMarket.Domain.Responses;
-using DiyorMarket.Infrastructure.Persistence;
+using Inflow.Domain.DTOs.Sale;
+using Inflow.Domain.Entities;
+using Inflow.Domain.Exeptions;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Domain.Pagniation;
+using Inflow.Domain.ResourceParameters;
+using Inflow.Domain.Responses;
+using Inflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace DiyorMarket.Services
@@ -14,9 +14,9 @@ namespace DiyorMarket.Services
     public class SaleService : ISaleService
     {
         private readonly IMapper _mapper;
-        private readonly DiyorMarketDbContext _context;
+        private readonly InflowDbContext _context;
 
-        public SaleService(IMapper mapper, DiyorMarketDbContext context)
+        public SaleService(IMapper mapper, InflowDbContext context)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -27,10 +27,10 @@ namespace DiyorMarket.Services
             var query = GetFiltrSaleResParameters(saleResourceParameters);
 
             var sales = query.ToPaginatedList(saleResourceParameters.PageSize, saleResourceParameters.PageNumber);
-            
+
             var saleDtos = _mapper.Map<List<SaleDto>>(sales);
 
-            var paginatedResult =  new PaginatedList<SaleDto>(saleDtos, sales.TotalCount, sales.CurrentPage, sales.PageSize);
+            var paginatedResult = new PaginatedList<SaleDto>(saleDtos, sales.TotalCount, sales.CurrentPage, sales.PageSize);
 
             return paginatedResult.ToResponse();
         }
@@ -72,7 +72,7 @@ namespace DiyorMarket.Services
         {
             var saleEntity = _mapper.Map<Sale>(saleToCreate);
 
-            foreach(var saleItem in saleEntity.SaleItems)
+            foreach (var saleItem in saleEntity.SaleItems)
             {
                 var item = _context.Products.FirstOrDefault(x => x.Id == saleItem.ProductId);
 
