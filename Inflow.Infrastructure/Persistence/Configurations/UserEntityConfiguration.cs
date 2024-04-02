@@ -1,7 +1,7 @@
 ﻿using Inflow.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Inflow.Infrastructure.Configurations
+namespace Inflow.Infrastructure.Persistence.Configurations
 {
     internal class UserEntityConfiguration : IEntityTypeConfiguration<User>
     {

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Inflow.Infrastructure.Configurations
+namespace Inflow.Infrastructure.Persistence.Configurations
 {
     public class SaleEntityConfiguration : IEntityTypeConfiguration<Sale>
     {
