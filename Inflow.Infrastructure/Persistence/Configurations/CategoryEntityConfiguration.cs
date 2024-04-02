@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Inflow.Infrastructure.Configurations
+namespace Inflow.Infrastructure.Persistence.Configurations
 {
     internal class CategoryEntityConfiguration : IEntityTypeConfiguration<Category>
     {

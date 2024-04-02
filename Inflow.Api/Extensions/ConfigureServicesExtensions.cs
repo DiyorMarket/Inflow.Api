@@ -1,9 +1,9 @@
-﻿using DiyorMarket.Infrastructure.Persistence.Repositories;
-using DiyorMarket.Services;
+﻿using DiyorMarket.Services;
 using Inflow.Domain.Intefaces.Services;
 using Inflow.Domain.Interfaces.Repositories;
 using Inflow.Domain.Interfaces.Services;
 using Inflow.Infrastructure;
+using Inflow.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -61,7 +61,7 @@ namespace Inflow.Api.Extensions
             var builder = WebApplication.CreateBuilder();
 
             services.AddDbContext<InflowDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DiyorMarketConection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("InflowConnection")));
 
             return services;
         }
