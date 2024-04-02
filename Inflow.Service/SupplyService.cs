@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
-using DiyorMarket.Domain.DTOs.Supply;
-using DiyorMarket.Domain.Entities;
-using DiyorMarket.Domain.Exceptions;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Domain.Pagniation;
-using DiyorMarket.Domain.ResourceParameters;
-using DiyorMarket.Domain.Responses;
-using DiyorMarket.Infrastructure.Persistence;
+using Inflow.Domain.DTOs.Supply;
+using Inflow.Domain.Entities;
+using Inflow.Domain.Exeptions;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Domain.Pagniation;
+using Inflow.Domain.ResourceParameters;
+using Inflow.Domain.Responses;
+using Inflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace DiyorMarket.Services
@@ -14,9 +14,9 @@ namespace DiyorMarket.Services
     public class SupplyService : ISupplyService
     {
         private readonly IMapper _mapper;
-        private readonly DiyorMarketDbContext _context;
+        private readonly InflowDbContext _context;
 
-        public SupplyService(IMapper mapper, DiyorMarketDbContext context)
+        public SupplyService(IMapper mapper, InflowDbContext context)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -63,7 +63,7 @@ namespace DiyorMarket.Services
         {
             var supplyEntity = _mapper.Map<Supply>(supplyToCreate);
 
-            foreach(var supplyItem in supplyEntity.SupplyItems)
+            foreach (var supplyItem in supplyEntity.SupplyItems)
             {
                 var item = _context.Products.FirstOrDefault(x => x.Id == supplyItem.ProductId);
 
