@@ -1,15 +1,15 @@
-﻿using DiyorMarket.Domain.DTOs.Dashboard;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Infrastructure.Persistence;
+﻿using Inflow.Domain.DTOs.Dashboard;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace DiyorMarket.Services;
 
 public class DashboardService : IDashboardService
 {
-    private readonly DiyorMarketDbContext _context;
+    private readonly InflowDbContext _context;
 
-    public DashboardService(DiyorMarketDbContext context)
+    public DashboardService(InflowDbContext context)
     {
         _context = context;
     }
@@ -20,7 +20,7 @@ public class DashboardService : IDashboardService
         var salesByCategory = GetDoughChartData();
         var splineChartData = GetSpliteChartData();
         var transactions = GetTransactions();
-        
+
         return new DashboardDto(summary, salesByCategory, splineChartData, transactions);
     }
 
@@ -32,13 +32,11 @@ public class DashboardService : IDashboardService
                               group saleItem by category.Name into groupedCategories
                               select new SalesByCategoryDto(groupedCategories.Key, groupedCategories.Count());
 
-
         return salesByCategory;
     }
 
     private Summary GetSummary()
     {
-        //2 month sales
         var salesItems = _context.SaleItems
             .Where(x => x.Sale.SaleDate.Month >= DateTime.Now.AddMonths(-2).Month)
             .AsNoTracking();
