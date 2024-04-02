@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
-using DiyorMarket.Domain.DTOs.Product;
-using DiyorMarket.Domain.Entities;
-using DiyorMarket.Domain.Interfaces.Services;
-using DiyorMarket.Domain.Pagniation;
-using DiyorMarket.Domain.ResourceParameters;
-using DiyorMarket.Domain.Responses;
-using DiyorMarket.Infrastructure.Persistence;
-using DiyorMarket.ResourceParameters;
+using Inflow.Domain.DTOs.Product;
+using Inflow.Domain.Entities;
+using Inflow.Domain.Interfaces.Services;
+using Inflow.Domain.Pagniation;
+using Inflow.Domain.Responses;
+using Inflow.Infrastructure;
+using Inflow.ResourceParameters;
 using Microsoft.EntityFrameworkCore;
 
 namespace DiyorMarket.Services
@@ -14,9 +13,9 @@ namespace DiyorMarket.Services
     public class ProductService : IProductService
     {
         private readonly IMapper _mapper;
-        private readonly DiyorMarketDbContext _context;
+        private readonly InflowDbContext _context;
 
-        public ProductService(IMapper mapper, DiyorMarketDbContext context)
+        public ProductService(IMapper mapper, InflowDbContext context)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -75,14 +74,14 @@ namespace DiyorMarket.Services
                     _ => query.OrderBy(x => x.Name),
                 };
             }
-            
+
             var products = query.ToPaginatedList(productResourceParameters.PageSize, productResourceParameters.PageNumber);
 
             foreach (var product in products)
             {
                 product.Category = _context.Categories.FirstOrDefault(x => x.Id == product.CategoryId);
             }
-            
+
             var productDtos = _mapper.Map<List<ProductDto>>(products);
 
             var paginatedResult = new PaginatedList<ProductDto>(productDtos.ToList(), products.TotalCount, products.CurrentPage, products.PageSize);
