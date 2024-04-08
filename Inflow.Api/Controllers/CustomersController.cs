@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Inflow.Api.Helper;
 using Inflow.Domain.DTOs.Customer;
 using Inflow.Domain.Interfaces.Services;
 using Inflow.Domain.ResourceParameters;
@@ -22,13 +23,31 @@ namespace Inflow.Controllers
             _customerService = customerService;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<CustomerDto>> GetCustomersAsync(
-            [FromQuery] CustomerResourceParameters customerResourceParameters)
+
+        [HttpGet(Name = "GetCustomers")]
+        public IActionResult GetCategoriesAsync(
+                 [FromQuery] CustomerResourceParameters customerResourceParameters)
         {
             var customers = _customerService.GetCustomers(customerResourceParameters);
+            var links = GetLinks(customerResourceParameters, customers.HasNextPage, customers.HasPreviousPage);
+            var metadata = new
+            {
+                customers.PageNumber,
+                customers.PageSize,
+                customers.HasNextPage,
+                customers.HasPreviousPage,
+                customers.TotalPages,
+                customers.TotalCount
+            };
 
-            return Ok(customers);
+            var result = new
+            {
+                data = customers.Data,
+                links,
+                metadata
+            };
+
+            return Ok(result);
         }
 
         [HttpGet("{id}", Name = "GetCustomerById")]
@@ -158,6 +177,68 @@ namespace Inflow.Controllers
             }
 
             return table;
+        }
+        private List<ResourceLink> GetLinks(
+          CustomerResourceParameters resourceParameters,
+          bool hasNext,
+          bool hasPrevious)
+        {
+            List<ResourceLink> links = new();
+
+            links.Add(new ResourceLink(
+                "self",
+                CreateCustomerResourceLink(resourceParameters, ResourceType.CurrentPage),
+                "GET"));
+
+            if (hasNext)
+            {
+                links.Add(new ResourceLink(
+                "next",
+                CreateCustomerResourceLink(resourceParameters, ResourceType.NextPage),
+                "GET"));
+            }
+
+            if (hasPrevious)
+            {
+                links.Add(new ResourceLink(
+                "previous",
+                CreateCustomerResourceLink(resourceParameters, ResourceType.PreviousPage),
+                "GET"));
+            }
+
+            foreach (var link in links)
+            {
+                var lastIndex = link.Href.IndexOf("/api");
+                if (lastIndex >= 0)
+                {
+                    link.Href = "https://0wn6qg77-7258.asse.devtunnels.ms" + link.Href.Substring(lastIndex);
+                }
+            }
+
+            return links;
+        }
+
+        private string? CreateCustomerResourceLink(CustomerResourceParameters resourceParameters, ResourceType type)
+        {
+            if (type == ResourceType.PreviousPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber - 1,
+                };
+                return Url.Link("GetCustomers", parameters);
+            }
+
+            if (type == ResourceType.NextPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber + 1,
+                };
+                return Url.Link("GetCustomers", parameters);
+            }
+
+            return Url.Link("GetCustomers", resourceParameters);
         }
     }
 }

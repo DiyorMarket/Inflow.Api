@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Inflow.Api.Helper;
 using Inflow.Domain.DTOs.Sale;
 using Inflow.Domain.Interfaces.Services;
 using Inflow.Domain.ResourceParameters;
@@ -20,14 +21,33 @@ namespace Inflow.Controllers
             _saleItemService = saleItemService;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<SaleDto>> GetSalesAsync(
-            [FromQuery] SaleResourceParameters saleResourceParameters)
+
+        [HttpGet(Name = "GetSales")]
+        public IActionResult GetSalesAsync(
+                 [FromQuery] SaleResourceParameters saleResourceParameters)
         {
             var sales = _saleService.GetSales(saleResourceParameters);
+            var links = GetLinks(saleResourceParameters, sales.HasNextPage, sales.HasPreviousPage);
+            var metadata = new
+            {
+                sales.PageNumber,
+                sales.PageSize,
+                sales.HasNextPage,
+                sales.HasPreviousPage,
+                sales.TotalPages,
+                sales.TotalCount
+            };
 
-            return Ok(sales);
+            var result = new
+            {
+                data = sales.Data,
+                links,
+                metadata
+            };
+
+            return Ok(result);
         }
+
 
         [HttpGet("export")]
         public ActionResult ExportSales()
@@ -127,6 +147,69 @@ namespace Inflow.Controllers
             }
 
             return table;
+        }
+
+        private List<ResourceLink> GetLinks(
+           SaleResourceParameters resourceParameters,
+           bool hasNext,
+           bool hasPrevious)
+        {
+            List<ResourceLink> links = new();
+
+            links.Add(new ResourceLink(
+                "self",
+                CreateSaleResourceLink(resourceParameters, ResourceType.CurrentPage),
+                "GET"));
+
+            if (hasNext)
+            {
+                links.Add(new ResourceLink(
+                "next",
+                CreateSaleResourceLink(resourceParameters, ResourceType.NextPage),
+                "GET"));
+            }
+
+            if (hasPrevious)
+            {
+                links.Add(new ResourceLink(
+                "previous",
+                CreateSaleResourceLink(resourceParameters, ResourceType.PreviousPage),
+                "GET"));
+            }
+
+            foreach (var link in links)
+            {
+                var lastIndex = link.Href.IndexOf("/api");
+                if (lastIndex >= 0)
+                {
+                    link.Href = "https://0wn6qg77-7258.asse.devtunnels.ms" + link.Href.Substring(lastIndex);
+                }
+            }
+
+            return links;
+        }
+
+        private string? CreateSaleResourceLink(SaleResourceParameters resourceParameters, ResourceType type)
+        {
+            if (type == ResourceType.PreviousPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber - 1,
+                };
+                return Url.Link("GetSales", parameters);
+            }
+
+            if (type == ResourceType.NextPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber + 1,
+                };
+                return Url.Link("GetSales", parameters);
+            }
+
+            return Url.Link("GetSales", resourceParameters);
         }
     }
 }

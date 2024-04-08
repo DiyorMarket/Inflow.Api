@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ClosedXML.Excel;
+using Inflow.Api.Helper;
 using Inflow.Domain.DTOs.Product;
 using Inflow.Domain.Entities;
 using Inflow.Domain.Interfaces.Services;
@@ -27,15 +28,31 @@ namespace Inflow.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<ProductDto>> GetProductsAsync(
-            [FromQuery] ProductResourceParameters productResourceParameters)
+        [HttpGet(Name = "GetProducts")]
+        public IActionResult GetProductsAsync(
+               [FromQuery] ProductResourceParameters productResourceParameters)
         {
             var products = _productService.GetProducts(productResourceParameters);
+            var links = GetLinks(productResourceParameters, products.HasNextPage, products.HasPreviousPage);
+            var metadata = new
+            {
+                products.PageNumber,
+                products.PageSize,
+                products.HasNextPage,
+                products.HasPreviousPage,
+                products.TotalPages,
+                products.TotalCount
+            };
 
-            return Ok(products);
+            var result = new
+            {
+                data = products.Data,
+                links,
+                metadata
+            };
+
+            return Ok(result);
         }
-
         [HttpGet("export/xls")]
         public ActionResult ExportProducts()
         {
@@ -218,6 +235,69 @@ namespace Inflow.Controllers
             }
 
             return data;
+        }
+
+        private List<ResourceLink> GetLinks(
+           ProductResourceParameters resourceParameters,
+           bool hasNext,
+           bool hasPrevious)
+        {
+            List<ResourceLink> links = new();
+
+            links.Add(new ResourceLink(
+                "self",
+                CreateProductResourceLink(resourceParameters, ResourceType.CurrentPage),
+                "GET"));
+
+            if (hasNext)
+            {
+                links.Add(new ResourceLink(
+                "next",
+                CreateProductResourceLink(resourceParameters, ResourceType.NextPage),
+                "GET"));
+            }
+
+            if (hasPrevious)
+            {
+                links.Add(new ResourceLink(
+                "previous",
+                CreateProductResourceLink(resourceParameters, ResourceType.PreviousPage),
+                "GET"));
+            }
+
+            foreach (var link in links)
+            {
+                var lastIndex = link.Href.IndexOf("/api");
+                if (lastIndex >= 0)
+                {
+                    link.Href = "https://0wn6qg77-7258.asse.devtunnels.ms" + link.Href.Substring(lastIndex);
+                }
+            }
+
+            return links;
+        }
+
+        private string? CreateProductResourceLink(ProductResourceParameters resourceParameters, ResourceType type)
+        {
+            if (type == ResourceType.PreviousPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber - 1,
+                };
+                return Url.Link("GetProducts", parameters);
+            }
+
+            if (type == ResourceType.NextPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber + 1,
+                };
+                return Url.Link("GetProducts", parameters);
+            }
+
+            return Url.Link("GetProducts", resourceParameters);
         }
     }
 }

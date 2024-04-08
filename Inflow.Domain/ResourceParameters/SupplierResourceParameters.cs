@@ -1,6 +1,6 @@
 ﻿namespace Inflow.Domain.ResourceParameters
 {
-    public class SupplierResourceParameters : ResourceParametersBase
+    public record SupplierResourceParameters : ResourceParametersBase
     {
         public override string OrderBy { get; set; } = "firstname";
     }

@@ -1,4 +1,5 @@
-﻿using Inflow.Domain.DTOs.SupplyItem;
+﻿using Inflow.Api.Helper;
+using Inflow.Domain.DTOs.SupplyItem;
 using Inflow.Domain.Interfaces.Services;
 using Inflow.Domain.ResourceParameters;
 using Microsoft.AspNetCore.Mvc;
@@ -16,15 +17,31 @@ namespace Inflow.Controllers
             _supplyItemService = supplyItemService;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<SupplyItemDto>> Get(
-            [FromQuery] SupplyItemResourceParameters supplyItemResourceParameters)
+        [HttpGet(Name = "GetSupplyItems")]
+        public IActionResult GetSupplyItemsAsync(
+                [FromQuery] SupplyItemResourceParameters supplyItemResourceParameters)
         {
             var supplyItems = _supplyItemService.GetSupplyItems(supplyItemResourceParameters);
+            var links = GetLinks(supplyItemResourceParameters, supplyItems.HasNextPage, supplyItems.HasPreviousPage);
+            var metadata = new
+            {
+                supplyItems.PageNumber,
+                supplyItems.PageSize,
+                supplyItems.HasNextPage,
+                supplyItems.HasPreviousPage,
+                supplyItems.TotalPages,
+                supplyItems.TotalCount
+            };
 
-            return Ok(supplyItems);
+            var result = new
+            {
+                data = supplyItems.Data,
+                links,
+                metadata
+            };
+
+            return Ok(result);
         }
-
         [HttpGet("{id}", Name = "GetSupplyItemById")]
         public ActionResult<SupplyItemDto> Get(int id)
         {
@@ -66,6 +83,68 @@ namespace Inflow.Controllers
             _supplyItemService.DeleteSupplyItem(id);
 
             return NoContent();
+        }
+        private List<ResourceLink> GetLinks(
+       SupplyItemResourceParameters resourceParameters,
+       bool hasNext,
+       bool hasPrevious)
+        {
+            List<ResourceLink> links = new();
+
+            links.Add(new ResourceLink(
+                "self",
+                CreateSupplItemsResourceLink(resourceParameters, ResourceType.CurrentPage),
+                "GET"));
+
+            if (hasNext)
+            {
+                links.Add(new ResourceLink(
+                "next",
+                CreateSupplItemsResourceLink(resourceParameters, ResourceType.NextPage),
+                "GET"));
+            }
+
+            if (hasPrevious)
+            {
+                links.Add(new ResourceLink(
+                "previous",
+                CreateSupplItemsResourceLink(resourceParameters, ResourceType.PreviousPage),
+                "GET"));
+            }
+
+            foreach (var link in links)
+            {
+                var lastIndex = link.Href.IndexOf("/api");
+                if (lastIndex >= 0)
+                {
+                    link.Href = "https://0wn6qg77-7258.asse.devtunnels.ms" + link.Href.Substring(lastIndex);
+                }
+            }
+
+            return links;
+        }
+
+        private string? CreateSupplItemsResourceLink(SupplyItemResourceParameters resourceParameters, ResourceType type)
+        {
+            if (type == ResourceType.PreviousPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber - 1,
+                };
+                return Url.Link("GetSupplyItems", parameters);
+            }
+
+            if (type == ResourceType.NextPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber + 1,
+                };
+                return Url.Link("GetSupplyItems", parameters);
+            }
+
+            return Url.Link("GetSupplyItems", resourceParameters);
         }
     }
 }

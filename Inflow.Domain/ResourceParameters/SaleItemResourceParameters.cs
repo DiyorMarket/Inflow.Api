@@ -1,6 +1,6 @@
 ﻿namespace Inflow.Domain.ResourceParameters
 {
-    public class SaleItemResourceParameters : ResourceParametersBase
+    public record SaleItemResourceParameters : ResourceParametersBase
     {
         public override string OrderBy { get; set; } = "id";
         public int? ProductId { get; set; }

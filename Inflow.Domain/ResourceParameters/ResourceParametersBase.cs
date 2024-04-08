@@ -1,6 +1,6 @@
 ﻿namespace Inflow.Domain.ResourceParameters
 {
-    public abstract class ResourceParametersBase
+    public abstract record ResourceParametersBase
     {
         protected virtual int MaxPageSize { get; set; } = 25;
         public virtual string? SearchString { get; set; }
