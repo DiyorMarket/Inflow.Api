@@ -35,8 +35,4 @@
     <ProjectReference Include="..\Inflow.Service\Inflow.Service.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Helper\" />
-  </ItemGroup>
-
 </Project>
