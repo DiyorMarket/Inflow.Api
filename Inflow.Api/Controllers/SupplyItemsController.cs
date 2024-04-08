@@ -16,6 +16,7 @@ namespace Inflow.Controllers
         {
             _supplyItemService = supplyItemService;
         }
+
         [HttpGet(Name = "GetSupplyItems")]
         public IActionResult GetSupplyItemsAsync(
                 [FromQuery] SupplyItemResourceParameters supplyItemResourceParameters)
