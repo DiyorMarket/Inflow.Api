@@ -265,7 +265,6 @@ namespace Inflow.Controllers
                 "GET"));
             }
 
-            // TODO Fix this implementation or remove totally
             foreach (var link in links)
             {
                 var lastIndex = link.Href.IndexOf("/api");
