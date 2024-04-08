@@ -23,7 +23,7 @@ namespace Inflow.Controllers
         }
 
         [HttpGet(Name = "GetSuppliers")]
-        public IActionResult GetSalesAsync(
+        public IActionResult GetSuppliersAsync(
           [FromQuery] SupplierResourceParameters supplierResourceParameters)
         {
             var suppliers = _supplierService.GetSuppliers(supplierResourceParameters);
