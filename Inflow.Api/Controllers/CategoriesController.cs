@@ -33,7 +33,7 @@ namespace Inflow.Controllers
                  [FromQuery] CategoryResourceParameters categoryResourceParameters)
         {
             var categories = _categoryService.GetCategories(categoryResourceParameters);
-            var links = GetLinks(categoryResourceParameters , categories.HasNextPage, categories.HasPreviousPage);
+            var links = GetLinks(categoryResourceParameters, categories.HasNextPage, categories.HasPreviousPage);
             var metadata = new
             {
                 categories.PageNumber,
