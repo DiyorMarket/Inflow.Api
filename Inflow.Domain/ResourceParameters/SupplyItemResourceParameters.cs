@@ -1,6 +1,6 @@
 ﻿namespace Inflow.Domain.ResourceParameters
 {
-    public class SupplyItemResourceParameters : ResourceParametersBase
+    public record SupplyItemResourceParameters : ResourceParametersBase
     {
         public int? ProductId { get; set; }
         public int? SupplyId { get; set; }

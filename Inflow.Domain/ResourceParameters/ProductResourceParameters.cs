@@ -2,7 +2,7 @@
 
 namespace Inflow.ResourceParameters
 {
-    public class ProductResourceParameters : ResourceParametersBase
+    public record ProductResourceParameters : ResourceParametersBase
     {
         public override string OrderBy { get; set; } = "name";
         public int? CategoryId { get; set; }
