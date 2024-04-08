@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Inflow.Api.Helper;
 using Inflow.Domain.DTOs.Supplier;
 using Inflow.Domain.Interfaces.Services;
 using Inflow.Domain.ResourceParameters;
@@ -21,13 +22,30 @@ namespace Inflow.Controllers
             _supplierService = supplierService;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<SupplierDto>> GetSuppliersAsync(
-            [FromQuery] SupplierResourceParameters supplierResourceParameters)
+        [HttpGet(Name = "GetSuppliers")]
+        public IActionResult GetSalesAsync(
+          [FromQuery] SupplierResourceParameters supplierResourceParameters)
         {
             var suppliers = _supplierService.GetSuppliers(supplierResourceParameters);
+            var links = GetLinks(supplierResourceParameters, suppliers.HasNextPage, suppliers.HasPreviousPage);
+            var metadata = new
+            {
+                suppliers.PageNumber,
+                suppliers.PageSize,
+                suppliers.HasNextPage,
+                suppliers.HasPreviousPage,
+                suppliers.TotalPages,
+                suppliers.TotalCount
+            };
 
-            return Ok(suppliers);
+            var result = new
+            {
+                data = suppliers.Data,
+                links,
+                metadata
+            };
+
+            return Ok(result);
         }
 
         [HttpGet("export/xls")]
@@ -165,5 +183,68 @@ namespace Inflow.Controllers
 
             return table;
         }
+        private List<ResourceLink> GetLinks(
+         SupplierResourceParameters resourceParameters,
+         bool hasNext,
+         bool hasPrevious)
+        {
+            List<ResourceLink> links = new();
+
+            links.Add(new ResourceLink(
+                "self",
+                CreateSupplierResourceLink(resourceParameters, ResourceType.CurrentPage),
+                "GET"));
+
+            if (hasNext)
+            {
+                links.Add(new ResourceLink(
+                "next",
+                CreateSupplierResourceLink(resourceParameters, ResourceType.NextPage),
+                "GET"));
+            }
+
+            if (hasPrevious)
+            {
+                links.Add(new ResourceLink(
+                "previous",
+                CreateSupplierResourceLink(resourceParameters, ResourceType.PreviousPage),
+                "GET"));
+            }
+
+            foreach (var link in links)
+            {
+                var lastIndex = link.Href.IndexOf("/api");
+                if (lastIndex >= 0)
+                {
+                    link.Href = "https://0wn6qg77-7258.asse.devtunnels.ms" + link.Href.Substring(lastIndex);
+                }
+            }
+
+            return links;
+        }
+
+        private string? CreateSupplierResourceLink(SupplierResourceParameters resourceParameters, ResourceType type)
+        {
+            if (type == ResourceType.PreviousPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber - 1,
+                };
+                return Url.Link("GetSuppliers", parameters);
+            }
+
+            if (type == ResourceType.NextPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber + 1,
+                };
+                return Url.Link("GetSuppliers", parameters);
+            }
+
+            return Url.Link("GetSuppliers", resourceParameters);
+        }
     }
 }
+
