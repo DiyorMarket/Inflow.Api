@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Inflow.Api.Helper;
 using Inflow.Domain.DTOs.Category;
 using Inflow.Domain.DTOs.Product;
 using Inflow.Domain.Interfaces.Services;
@@ -27,13 +28,30 @@ namespace Inflow.Controllers
             _productService = productService;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<CategoryDto>> GetCategories(
-            [FromQuery] CategoryResourceParameters categoryResourceParameters)
+        [HttpGet(Name = "GetCategories")]
+        public IActionResult GetCategoriesAsync(
+                 [FromQuery] CategoryResourceParameters categoryResourceParameters)
         {
             var categories = _categoryService.GetCategories(categoryResourceParameters);
+            var links = GetLinks(categoryResourceParameters , categories.HasNextPage, categories.HasPreviousPage);
+            var metadata = new
+            {
+                categories.PageNumber,
+                categories.PageSize,
+                categories.HasNextPage,
+                categories.HasPreviousPage,
+                categories.TotalPages,
+                categories.TotalCount
+            };
 
-            return Ok(categories);
+            var result = new
+            {
+                data = categories.Data,
+                links,
+                metadata
+            };
+
+            return Ok(result);
         }
 
         [HttpGet("{id}", Name = "GetCategoryById")]
@@ -169,5 +187,68 @@ namespace Inflow.Controllers
             return table;
         }
 
+        private List<ResourceLink> GetLinks(
+          CategoryResourceParameters resourceParameters,
+          bool hasNext,
+          bool hasPrevious)
+        {
+            List<ResourceLink> links = new();
+
+            links.Add(new ResourceLink(
+                "self",
+                CreateCategoryResourceLink(resourceParameters, ResourceType.CurrentPage),
+                "GET"));
+
+            if (hasNext)
+            {
+                links.Add(new ResourceLink(
+                "next",
+                CreateCategoryResourceLink(resourceParameters, ResourceType.NextPage),
+                "GET"));
+            }
+
+            if (hasPrevious)
+            {
+                links.Add(new ResourceLink(
+                "previous",
+                CreateCategoryResourceLink(resourceParameters, ResourceType.PreviousPage),
+                "GET"));
+            }
+
+            foreach (var link in links)
+            {
+                var lastIndex = link.Href.IndexOf("/api");
+                if (lastIndex >= 0)
+                {
+                    link.Href = "https://0wn6qg77-7258.asse.devtunnels.ms" + link.Href.Substring(lastIndex);
+                }
+            }
+
+            return links;
+        }
+
+        private string? CreateCategoryResourceLink(CategoryResourceParameters resourceParameters, ResourceType type)
+        {
+            if (type == ResourceType.PreviousPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber - 1,
+                };
+                return Url.Link("GetCategories", parameters);
+            }
+
+            if (type == ResourceType.NextPage)
+            {
+                var parameters = resourceParameters with
+                {
+                    PageNumber = resourceParameters.PageNumber + 1,
+                };
+                return Url.Link("GetCategories", parameters);
+            }
+
+            return Url.Link("GetCategories", resourceParameters);
+        }
     }
 }
+
