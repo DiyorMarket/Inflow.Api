@@ -28,21 +28,21 @@ namespace Inflow.Controllers
         public IActionResult GetCategoriesAsync(
                  [FromQuery] CustomerResourceParameters customerResourceParameters)
         {
-            var categories = _customerService.GetCustomers(customerResourceParameters);
-            var links = GetLinks(customerResourceParameters, categories.HasNextPage, categories.HasPreviousPage);
+            var customers = _customerService.GetCustomers(customerResourceParameters);
+            var links = GetLinks(customerResourceParameters, customers.HasNextPage, customers.HasPreviousPage);
             var metadata = new
             {
-                categories.PageNumber,
-                categories.PageSize,
-                categories.HasNextPage,
-                categories.HasPreviousPage,
-                categories.TotalPages,
-                categories.TotalCount
+                customers.PageNumber,
+                customers.PageSize,
+                customers.HasNextPage,
+                customers.HasPreviousPage,
+                customers.TotalPages,
+                customers.TotalCount
             };
 
             var result = new
             {
-                data = categories.Data,
+                data = customers.Data,
                 links,
                 metadata
             };
