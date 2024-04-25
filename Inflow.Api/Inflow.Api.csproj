@@ -32,7 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Inflow.Domain\Inflow.Domain.csproj" />
     <ProjectReference Include="..\Inflow.Infrastructure\Inflow.Infrastructure.csproj" />
-    <ProjectReference Include="..\Inflow.Service\Inflow.Service.csproj" />
+    <ProjectReference Include="..\Inflow.Service\Inflow.Services.csproj" />
   </ItemGroup>
 
 </Project>
