@@ -46,7 +46,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    builder.Services.SeedDatabase(services);
+    DatabaseSeeder.SeedDatabase(services);
 }
 
 app.UseMiddleware<ErrorHandlerMiddleware>();

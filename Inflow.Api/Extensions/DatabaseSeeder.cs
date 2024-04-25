@@ -3,278 +3,255 @@ using Inflow.Domain.Entities;
 using Inflow.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-namespace Inflow.Api.Extensions
+namespace Inflow.Api.Extensions;
+
+public static class DatabaseSeeder
 {
-    public static class DatabaseSeeder
+    private static Faker _faker = new Faker();
+
+    public static void SeedDatabase(IServiceProvider serviceProvider)
     {
-        private static Faker _faker = new Faker();
+        var options = serviceProvider.GetRequiredService<DbContextOptions<InflowDbContext>>();
+        using var context = new InflowDbContext(options);
 
-        public static void SeedDatabase(this IServiceCollection _, IServiceProvider serviceProvider)
+        CreateCategories(context);
+        CreateProducts(context);
+        CreateCustomers(context);
+        CreateSales(context);
+        CreateSaleItems(context);
+        CreateSuppliers(context);
+        CreateSupplies(context);
+        CreateSupplyItems(context);
+    }
+
+    private static void CreateCategories(InflowDbContext context)
+    {
+        if (context.Categories.Any()) return;
+
+        List<string> categoryNames = new();
+        HashSet<Category> categories = new();
+
+        for (int i = 0; i < 25; i++)
         {
-            var options = serviceProvider.GetRequiredService<DbContextOptions<InflowDbContext>>();
-            using var context = new InflowDbContext(options);
+            var categoryName = _faker.Commerce
+                                     .Categories(1)
+                                     .First()
+                                     .FirstLetterToUpper();
+            int attempts = 0;
 
-            CreateCategories(context);
-            CreateProducts(context);
-            CreateCustomers(context);
-            CreateSales(context);
-            CreateSaleItems(context);
-            CreateSuppliers(context);
-            CreateSupplies(context);
-            CreateSupplyItems(context);
-            EditPriceForAllEntities(context);
+            while (categoryNames.Contains(categoryName) && attempts < 100)
+            {
+                categoryName = _faker.Commerce
+                                     .Categories(1)
+                                     .First()
+                                     .FirstLetterToUpper();
+                attempts++;
+            }
+
+            categoryNames.Add(categoryName);
+            categories.Add(new Category
+            {
+                Name = categoryName,
+            });
         }
 
-        private static void CreateCategories(InflowDbContext context)
+        context.Categories.AddRange(categories);
+        context.SaveChanges();
+    }
+
+    public static void CreateProducts(InflowDbContext context)
+    {
+        if (context.Products.Any()) return;
+
+        var categories = context.Categories.ToList();
+        var productNames = new List<string>();
+        var products = new List<Product>();
+
+        foreach (var category in categories)
         {
-            if (context.Categories.Any()) return;
+            var productsCount = new Random().Next(5, 10);
 
-            List<string> categoryNames = new();
-            List<Category> categories = new();
-
-            for (int i = 0; i < 25; i++)
+            for (int i = 0; i < productsCount; i++)
             {
-                var categoryName = _faker.Commerce
-                    .Categories(1)
-                    .First()
-                    .FirstLetterToUpper();
+                var quantityInStock = new Random().Next(5, 10);
+                var productName = _faker.Commerce.ProductName().FirstLetterToUpper();
+
                 int attempts = 0;
 
-                while (categoryNames.Contains(categoryName) && attempts < 100)
+                while (productNames.Contains(productName) && attempts < 100)
                 {
-                    categoryName = _faker.Commerce
-                        .Categories(1)
-                        .First()
+                    productName = _faker.Commerce
+                        .ProductName()
                         .FirstLetterToUpper();
+
                     attempts++;
                 }
 
-                categoryNames.Add(categoryName);
-                categories.Add(new Category
+                productNames.Add(productName);
+
+                products.Add(new Product
                 {
-                    Name = categoryName,
+                    Name = productName,
+                    Description = _faker.Commerce.ProductDescription(),
+                    Price = _faker.Random.Decimal(10_000, 200_000),
+                    ExpireDate = _faker.Date.Between(DateTime.Now.AddYears(-3), DateTime.Now),
+                    QuantityInStock = quantityInStock,
+                    CategoryId = category.Id,
                 });
             }
-
-            context.Categories.AddRange(categories);
-            context.SaveChanges();
         }
-        public static void CreateProducts(InflowDbContext context)
+        context.Products.AddRange(products);
+        context.SaveChanges();
+    }
+
+    private static void CreateCustomers(InflowDbContext context)
+    {
+        if (context.Customers.Any()) return;
+        List<Customer> customers = new List<Customer>();
+
+        for (int i = 0; i < 100; i++)
         {
-            if (context.Products.Any()) return;
-
-            var categories = context.Categories.ToList();
-            var productNames = new List<string>();
-            var products = new List<Product>();
-
-            foreach (var category in categories)
+            customers.Add(new Customer()
             {
-                var productsCount = new Random().Next(5, 10);
-
-                for (int i = 0; i < productsCount; i++)
-                {
-                    var quantityInStock = new Random().Next(5, 10);
-                    var productName = _faker.Commerce.ProductName().FirstLetterToUpper();
-
-                    int attempts = 0;
-
-                    while (productNames.Contains(productName) && attempts < 100)
-                    {
-                        productName = _faker.Commerce
-                            .ProductName()
-                            .FirstLetterToUpper();
-
-                        attempts++;
-                    }
-
-                    productNames.Add(productName);
-
-                    products.Add(new Product
-                    {
-                        Name = productName,
-                        Description = _faker.Commerce.ProductDescription(),
-                        Price = _faker.Random.Decimal(10_000, 200_000),
-                        ExpireDate = _faker.Date.Between(DateTime.Now.AddYears(-3), DateTime.Now),
-                        QuantityInStock = quantityInStock,
-                        CategoryId = category.Id,
-                    });
-                }
-            }
-            context.Products.AddRange(products);
-            context.SaveChanges();
+                FirstName = _faker.Name.FirstName(),
+                LastName = _faker.Name.LastName(),
+                PhoneNumber = _faker.Phone.PhoneNumber("+998-(##) ###-##-##")
+            });
         }
-        private static void CreateCustomers(InflowDbContext context)
-        {
-            if (context.Customers.Any()) return;
-            List<Customer> customers = new List<Customer>();
 
-            for (int i = 0; i < 100; i++)
+        context.Customers.AddRange(customers);
+        context.SaveChanges();
+    }
+
+    private static void CreateSales(InflowDbContext context)
+    {
+        if (context.Sales.Any()) return;
+
+        var customers = context.Customers.ToList();
+        List<Sale> sales = new List<Sale>();
+
+        foreach (var customer in customers)
+        {
+            int salesCount = new Random().Next(3, 6);
+            for (int i = 0; i < salesCount; i++)
             {
-                customers.Add(new Customer()
+                sales.Add(new Sale()
                 {
-                    FirstName = _faker.Name.FirstName(),
-                    LastName = _faker.Name.LastName(),
-                    PhoneNumber = _faker.Phone.PhoneNumber("+998-(##) ###-##-##")
+                    CustomerId = customer.Id,
+                    SaleDate = _faker.Date.Between(DateTime.Now.AddYears(-2), DateTime.Now),
                 });
             }
-
-            context.Customers.AddRange(customers);
-            context.SaveChanges();
         }
-        private static void CreateSales(InflowDbContext context)
+
+        context.Sales.AddRange(sales);
+        context.SaveChanges();
+    }
+
+    private static void CreateSaleItems(InflowDbContext context)
+    {
+        if (context.SaleItems.Any()) return;
+
+        var sales = context.Sales.ToList();
+        var products = context.Products.ToList();
+        List<SaleItem> saleItems = new List<SaleItem>();
+
+        foreach (var sale in sales)
         {
-            if (context.Sales.Any()) return;
+            int saleItemsCount = new Random().Next(5, 10);
 
-            var customers = context.Customers.ToList();
-            List<Sale> sales = new List<Sale>();
-
-            foreach (var customer in customers)
+            for (int i = 0; i < saleItemsCount; i++)
             {
-                int salesCount = new Random().Next(3, 6);
-                for (int i = 0; i < salesCount; i++)
+                var randomProduct = _faker.PickRandom(products);
+
+                var quantity = new Random().Next(10, 20);
+
+                saleItems.Add(new SaleItem()
                 {
-                    sales.Add(new Sale()
-                    {
-                        CustomerId = customer.Id,
-                        SaleDate = _faker.Date.Between(DateTime.Now.AddYears(-2), DateTime.Now),
-                    });
-                }
-            }
-
-            context.Sales.AddRange(sales);
-            context.SaveChanges();
-        }
-        private static void CreateSaleItems(InflowDbContext context)
-        {
-            if (context.SaleItems.Any()) return;
-
-            var sales = context.Sales.ToList();
-            var products = context.Products.ToList();
-            List<SaleItem> saleItems = new List<SaleItem>();
-
-            foreach (var sale in sales)
-            {
-                int saleItemsCount = new Random().Next(5, 10);
-
-                for (int i = 0; i < saleItemsCount; i++)
-                {
-                    var randomProduct = _faker.PickRandom(products);
-
-                    var quantity = new Random().Next(10, 20);
-
-                    saleItems.Add(new SaleItem()
-                    {
-                        ProductId = randomProduct.Id,
-                        SaleId = sale.Id,
-                        Quantity = quantity,
-                        UnitPrice = randomProduct.Price * (decimal)1.25,
-                    });
-                }
-            }
-
-            context.SaleItems.AddRange(saleItems);
-            context.SaveChanges();
-        }
-        private static void CreateSuppliers(InflowDbContext context)
-        {
-            if (context.Suppliers.Any()) return;
-            List<Supplier> suppliers = new List<Supplier>();
-
-            for (int i = 0; i < 50; i++)
-            {
-                suppliers.Add(new Supplier()
-                {
-                    FirstName = _faker.Name.FirstName(),
-                    LastName = _faker.Name.LastName(),
-                    PhoneNumber = _faker.Phone.PhoneNumber("+998-(##) ###-##-##"),
-                    Company = _faker.Company.CompanyName(),
+                    ProductId = randomProduct.Id,
+                    SaleId = sale.Id,
+                    Quantity = quantity,
+                    UnitPrice = randomProduct.Price * (decimal)1.25,
                 });
             }
-
-            context.Suppliers.AddRange(suppliers);
-            context.SaveChanges();
         }
-        private static void CreateSupplies(InflowDbContext context)
+
+        context.SaleItems.AddRange(saleItems);
+        context.SaveChanges();
+    }
+
+    private static void CreateSuppliers(InflowDbContext context)
+    {
+        if (context.Suppliers.Any()) return;
+        List<Supplier> suppliers = new List<Supplier>();
+
+        for (int i = 0; i < 50; i++)
         {
-            if (context.Supplies.Any()) return;
-
-            var suppliers = context.Suppliers.ToList();
-            List<Supply> supplies = new List<Supply>();
-
-            foreach (var supplier in suppliers)
+            suppliers.Add(new Supplier()
             {
-                int suppliesCount = new Random().Next(10, 12);
-                for (int i = 0; i < suppliesCount; i++)
-                {
-                    supplies.Add(new Supply()
-                    {
-                        SupplierId = supplier.Id,
-                        SupplyDate = _faker.Date.Between(DateTime.Now.AddYears(-2), DateTime.Now),
-                    });
-                }
-            }
-
-            context.Supplies.AddRange(supplies);
-            context.SaveChanges();
+                FirstName = _faker.Name.FirstName(),
+                LastName = _faker.Name.LastName(),
+                PhoneNumber = _faker.Phone.PhoneNumber("+998-(##) ###-##-##"),
+                Company = _faker.Company.CompanyName(),
+            });
         }
-        private static void CreateSupplyItems(InflowDbContext context)
+
+        context.Suppliers.AddRange(suppliers);
+        context.SaveChanges();
+    }
+
+    private static void CreateSupplies(InflowDbContext context)
+    {
+        if (context.Supplies.Any()) return;
+
+        var suppliers = context.Suppliers.ToList();
+        List<Supply> supplies = new List<Supply>();
+
+        foreach (var supplier in suppliers)
         {
-            if (context.SupplyItems.Any()) return;
-
-            var supplies = context.Supplies.ToList();
-            var products = context.Products.ToList();
-            List<SupplyItem> supplyItems = new List<SupplyItem>();
-
-            foreach (var supply in supplies)
+            int suppliesCount = new Random().Next(10, 12);
+            for (int i = 0; i < suppliesCount; i++)
             {
-                int supplyItemsCount = new Random().Next(20, 30);
-
-                for (int i = 0; i < supplyItemsCount; i++)
+                supplies.Add(new Supply()
                 {
-                    var randomProduct = _faker.PickRandom(products);
-
-                    var quantity = new Random().Next(5, 10);
-
-                    supplyItems.Add(new SupplyItem()
-                    {
-                        ProductId = randomProduct.Id,
-                        SupplyId = supply.Id,
-                        Quantity = quantity,
-                        UnitPrice = randomProduct.Price * (decimal)0.8
-                    });
-                }
-            }
-
-            context.SupplyItems.AddRange(supplyItems);
-            context.SaveChanges();
-        }
-        private static void EditPriceForAllEntities(InflowDbContext context)
-        {
-            var products = context.Products.ToList();
-            if (products[1].Price >= 20_000)
-            {
-                foreach (var product in products)
-                {
-                    var price = product.Price / 12450;
-                    product.Price = price;
-                    context.Products.Update(product);
-                }
-                var saleitems = context.SaleItems.ToList();
-                foreach (var sale in saleitems)
-                {
-                    var price = sale.UnitPrice / 12450;
-                    sale.UnitPrice = price;
-                    context.SaleItems.Update(sale);
-                }
-                var supplyItem = context.SupplyItems.ToList();
-                foreach (var supply in supplyItem)
-                {
-                    var price = supply.UnitPrice / 12450;
-                    supply.UnitPrice = price;
-                    context.SupplyItems.Update(supply);
-                }
-                context.SaveChanges();
+                    SupplierId = supplier.Id,
+                    SupplyDate = _faker.Date.Between(DateTime.Now.AddYears(-2), DateTime.Now),
+                });
             }
         }
+
+        context.Supplies.AddRange(supplies);
+        context.SaveChanges();
+    }
+
+    private static void CreateSupplyItems(InflowDbContext context)
+    {
+        if (context.SupplyItems.Any()) return;
+
+        var supplies = context.Supplies.ToList();
+        var products = context.Products.ToList();
+        List<SupplyItem> supplyItems = new List<SupplyItem>();
+
+        foreach (var supply in supplies)
+        {
+            int supplyItemsCount = new Random().Next(20, 30);
+
+            for (int i = 0; i < supplyItemsCount; i++)
+            {
+                var randomProduct = _faker.PickRandom(products);
+
+                var quantity = new Random().Next(5, 10);
+
+                supplyItems.Add(new SupplyItem()
+                {
+                    ProductId = randomProduct.Id,
+                    SupplyId = supply.Id,
+                    Quantity = quantity,
+                    UnitPrice = randomProduct.Price * (decimal)0.8
+                });
+            }
+        }
+
+        context.SupplyItems.AddRange(supplyItems);
+        context.SaveChanges();
     }
 }
